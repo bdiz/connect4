@@ -1,0 +1,22 @@
+#!/usr/bin/env ruby
+require 'rubygems'
+require 'bundler/setup'
+
+require 'connect4'
+
+module Connect4
+  Tournament.freeze
+  Game.freeze
+  Grid.freeze
+  Disk.freeze
+end
+
+players_dir = File.expand_path("../../lib/connect4/players", __FILE__)
+Dir.glob("#{players_dir}/*.rb").each {|file| load file }
+
+tournament_options = {
+  games_per_match: eval(ENV['GAMES'].to_s),
+  verbose:         eval(ENV['VERBOSE'].to_s)
+}
+
+Connect4::Tournament.new(*Connect4::Player.players, tournament_options).play
