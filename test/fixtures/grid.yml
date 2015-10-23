@@ -190,3 +190,26 @@ column_overflow:
       x - x - x - -
       x - x x x - -
  
+remove_disk:
+  -
+    id: 1
+    next_move: 6
+    grid: |
+      - - o - x - -
+      x x x - - x x
+      - x x x - x -
+      x x - - - x x
+      x - x - x - -
+      x - x x x - -
+
+savepoint:
+  -
+    id: 1
+    grid: |
+      o o o o o o o
+      o o o o o o o
+      o o o o o o o
+      x x - - - x x
+      x - x - x - -
+      x - x x x - -
+

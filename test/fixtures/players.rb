@@ -93,8 +93,4 @@ class ManualPlayer < Connect4::Player
     return Integer(gets)-1
   end
 
-  def manual
-    true
-  end
-
 end

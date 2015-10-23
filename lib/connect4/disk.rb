@@ -1,10 +1,49 @@
 module Connect4
-  class Disk
-    include Comparable
+
+  class Space
+
+    class << self
+      private_methods :new
+      def get
+        @singleton ||= new
+      end
+    end
+
     attr_reader :player
+    alias_method :owner, :player
+    attr_accessor :to_s
+
+    def empty?
+      true
+    end
+
+    def mine? player
+      false
+    end
+
+    def theirs? player
+      false
+    end
+
+  end
+
+  class Disk < Space
+    include Comparable
 
     def initialize player
       @player = player
+    end
+
+    def empty?
+      false
+    end
+
+    def mine? player
+      @player == player
+    end
+
+    def theirs? player
+      @player != player
     end
 
     def <=> other

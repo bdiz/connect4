@@ -48,9 +48,13 @@ module Connect4
       display self if @verbose
       determine_winner do
         while !game_over?
-          keep_time! do
-            play_disk(@turn.rotate!.last.next_move)
+          column = nil
+          restore_grids do
+            keep_time! do
+              column = @turn.rotate!.last.next_move
+            end
           end
+          play_disk(column)
           display self if @verbose
         end
       end
@@ -78,17 +82,21 @@ module Connect4
     end
 
     def to_s
-      {
-        @player1.disk_symbol => @player1,
-        @player2.disk_symbol => @player2
-      }
-      .sort.reverse.map do |disk_symbol, player|
+      [@player1, @player2].sort.reverse.map do |player|
         "#{player.disk_symbol} #{player} (#{player.wins} #{player.wins == 1 ? 'win' : 'wins'})"
       end
       .join("\n") + "\n\n" + @grid.to_s
     end
 
     private
+
+    def restore_grids &block
+      @player1.grid.set_savepoint
+      @player2.grid.set_savepoint
+      block.call
+      @player1.grid.restore_savepoint
+      @player2.grid.restore_savepoint
+    end
 
     def play_disk column
       @grids.each {|grid| grid.insert(@turn.last.disk, column) }
@@ -127,11 +135,7 @@ module Connect4
     end
 
     def keep_time! &block
-      if @turn.rotate.last.manual
-        block.call
-      else
-        Timeout::timeout(TIME_ALLOWED_PER_MOVE, PlayerTimeout) { block.call }
-      end
+      Timeout::timeout(Float(ENV.fetch('TIMEOUT', TIME_ALLOWED_PER_MOVE)), PlayerTimeout) { block.call }
     end
 
     def display_winner

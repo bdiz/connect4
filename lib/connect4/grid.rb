@@ -1,3 +1,4 @@
+require 'connect4/disk'
 require 'connect4/column'
 require 'connect4/core_ext/array'
 
@@ -15,8 +16,7 @@ module Connect4
     LEFT_LEG = "\u2571"
     RIGHT_LEG = "\u2572"
     BOARD_COLOR = :yellow
-    EMPTY_COLORING = { color: :light_black, background: BOARD_COLOR }
-    EMPTY_SPOT = DISK.colorize(EMPTY_COLORING)
+    Space.get.to_s = DISK.colorize(color: :light_black, background: BOARD_COLOR)
 
     class OverflowError < RuntimeError
     end
@@ -24,20 +24,41 @@ module Connect4
     end
 
     def initialize columns=nil
-      super(columns || Array.new(NUMBER_OF_COLUMNS) { Column.new(NUMBER_OF_ROWS) })
+      super(columns || Array.new(NUMBER_OF_COLUMNS) { Column.new(NUMBER_OF_ROWS, Space.get) })
+      @restore_savepoint_operations = []
     end
 
     def insert disk, column
       raise InvalidColumnPlayed, column unless (0..6).include?(column)
+      @restore_savepoint_operations << {method: :remove, column: column}
       begin
         columns[column].insert(disk)
       rescue Column::OverflowError => e
         raise e, "in column #{column}", e.backtrace
       end
     end
+
+    def remove column
+      columns[column].remove.tap do |disk|
+        @restore_savepoint_operations << {method: :insert, column: column, disk: disk}
+      end
+    end
+
+    def set_savepoint
+      @restore_savepoint_operations = []
+    end
+
+    def restore_savepoint
+      while !@restore_savepoint_operations.empty?
+        operation = @restore_savepoint_operations.pop
+        columns[operation[:column]].send(operation[:method], *[operation[:disk]].compact)
+      end
+    end
+
+    alias_method :restore, :restore_savepoint
     
     def full?
-      columns.flatten.none?(&:nil?)
+      columns.flatten.none?(&:empty?)
     end
 
     def has_consecutive_disks?
@@ -62,8 +83,8 @@ module Connect4
       temp_columns = (angle == :falling) ? columns : columns.reverse
       temp_columns.each_with_index do |column, shift_amount|
         column = column.dup
-        shift_amount.times { column.unshift(nil) }
-        (NUMBER_OF_COLUMNS - ZERO_INDEX_OFFSET - shift_amount).times { column << nil }
+        shift_amount.times { column.unshift(Space.get) }
+        (NUMBER_OF_COLUMNS - ZERO_INDEX_OFFSET - shift_amount).times { column << Space.get }
         offset_columns << column
       end
       consecutive_disks(offset_columns.transpose)
@@ -74,8 +95,8 @@ module Connect4
       (0..NUMBER_OF_ROWS-ZERO_INDEX_OFFSET).to_a.reverse.each do |row|
         s += '   '
         columns.each_with_index do |column, index|
-          s += ' '.colorize(EMPTY_COLORING) unless index == 0
-          s += "#{column[row] || EMPTY_SPOT}"
+          s += ' '.colorize(background: BOARD_COLOR) unless index == 0
+          s += "#{column[row]}"
         end
         s += "\n"
       end

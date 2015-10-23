@@ -133,7 +133,7 @@ module Connect4
         display self if @verbose
         who_plays_first = [@player1, @player2]
         @number_of_games.times do |game_number|
-          silent_play = game_number >= NUMBER_OF_GAMES_TO_DISPLAY
+          silent_play = game_number >= Integer(ENV.fetch('GAMES_TO_DISPLAY', NUMBER_OF_GAMES_TO_DISPLAY))
           game = Game.new(*who_plays_first, verbose: !silent_play && @verbose)
           game.play
           display(game, delay: 0.07) if silent_play and @verbose
