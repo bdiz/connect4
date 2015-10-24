@@ -11,7 +11,7 @@ module Connect4
 
     attr_reader :player
     alias_method :owner, :player
-    attr_accessor :to_s
+    attr_accessor :symbol
 
     def empty?
       true
@@ -23,6 +23,10 @@ module Connect4
 
     def theirs? player
       false
+    end
+
+    def to_s
+      @symbol
     end
 
   end
@@ -47,16 +51,16 @@ module Connect4
     end
 
     def <=> other
-      @player.object_id <=> other.player.object_id
+      if symbol and other.symbol
+        symbol <=> other.symbol
+      else
+        object_id <=> other.object_id
+      end
     end
 
     alias_method :eql?, :==
     def hash
       @player.object_id.hash
-    end
-
-    def to_s
-      @player.disk_symbol
     end
 
     def inspect

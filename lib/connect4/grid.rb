@@ -16,7 +16,7 @@ module Connect4
     LEFT_LEG = "\u2571"
     RIGHT_LEG = "\u2572"
     BOARD_COLOR = :yellow
-    Space.get.to_s = DISK.colorize(color: :light_black, background: BOARD_COLOR)
+    Space.get.symbol = DISK.colorize(color: :light_black, background: BOARD_COLOR)
 
     class OverflowError < RuntimeError
     end

@@ -25,8 +25,8 @@ module Connect4
       @player1.reset
       @player2.reset
 
-      @player1.disk_symbol ||= PLAYER1_DISK
-      @player2.disk_symbol ||= PLAYER2_DISK
+      @player1.disk.symbol ||= PLAYER1_DISK
+      @player2.disk.symbol ||= PLAYER2_DISK
 
       @grids = [Grid.new, Grid.new, Grid.new]
       @grid, @player1.grid, @player2.grid = @grids
@@ -83,7 +83,7 @@ module Connect4
 
     def to_s
       [@player1, @player2].sort.reverse.map do |player|
-        "#{player.disk_symbol} #{player} (#{player.wins} #{player.wins == 1 ? 'win' : 'wins'})"
+        "#{player.disk.symbol} #{player} (#{player.wins} #{player.wins == 1 ? 'win' : 'wins'})"
       end
       .join("\n") + "\n\n" + @grid.to_s
     end

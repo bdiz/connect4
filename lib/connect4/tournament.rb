@@ -123,7 +123,7 @@ module Connect4
         @verbose = options[:verbose] || false
         @number_of_games = options[:number_of_games] || DEFAULT_NUMBER_OF_GAMES
         @player1, @player2 = ScoreKeepingPlayer.new(player1), ScoreKeepingPlayer.new(player2)
-        @player1.disk_symbol = @player2.disk_symbol = nil
+        @player1.disk.symbol = @player2.disk.symbol = nil
         @winner = nil
         @draw = false
         @time_between_displays = TIME_BETWEEN_DISPLAYS

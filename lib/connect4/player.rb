@@ -6,7 +6,7 @@ module Connect4
 
     include Comparable
 
-    attr_accessor :disk_symbol, :grid
+    attr_accessor :grid
 
     class << self
 
@@ -43,15 +43,11 @@ module Connect4
     end
 
     def disk
-      Disk.new(self)
+      @disk ||= Disk.new(self)
     end
 
     def <=> other
-      if disk_symbol and other.disk_symbol
-        disk_symbol <=> other.disk_symbol
-      else
-        object_id <=> other.object_id
-      end
+      disk <=> other.disk
     end
 
     def to_s
