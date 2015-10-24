@@ -21,7 +21,7 @@ describe Connect4::Game do
       fixtures[ways_to_win].each do |scenario|
         p1 = PredictablePlayer.new(scenario['next_move']).keep_score
         p2 = Player2.new.keep_score
-        stub_grid(scenario['grid'], p1, p2) do
+        stub_board(scenario['board'], p1, p2) do
           game = Connect4::Game.new(p1, p2)
           game.play
           game.winner.must_equal p1
@@ -35,7 +35,7 @@ describe Connect4::Game do
     fixtures['draw'].each do |scenario|
       p1 = PredictablePlayer.new(scenario['next_move']).keep_score
       p2 = Player2.new.keep_score
-      stub_grid(scenario['grid'], p1, p2) do
+      stub_board(scenario['board'], p1, p2) do
         game = Connect4::Game.new(p1, p2)
         game.play
         game.winner.must_equal nil
@@ -48,7 +48,7 @@ describe Connect4::Game do
     fixtures['column_overflow'].each do |scenario|
       p1 = PredictablePlayer.new(scenario['next_move']).keep_score
       p2 = Player2.new.keep_score
-      stub_grid(scenario['grid'], p1, p2) do
+      stub_board(scenario['board'], p1, p2) do
         game = Connect4::Game.new(p1, p2)
         game.column_overflowed?.must_equal false
         game.play

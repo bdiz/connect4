@@ -2,7 +2,7 @@ vertical:
   -
     id: 1
     next_move: 0
-    grid: |
+    board: |
       o o o o o o o
       o o o o o o o
       o o o o o o o
@@ -12,7 +12,7 @@ vertical:
   -
     id: 2
     next_move: 6
-    grid: |
+    board: |
       o o o o o o o
       o o o o o o o
       o o o o o o o
@@ -22,7 +22,7 @@ vertical:
   -
     id: 3
     next_move: 6
-    grid: |
+    board: |
       o o o x o x o
       o o o - - - x
       o o o - x x x
@@ -32,7 +32,7 @@ vertical:
   -
     id: 4
     next_move: 0
-    grid: |
+    board: |
       o - x x - x -
       x - - x x - x
       x x - - - x -
@@ -44,7 +44,7 @@ horizontal:
   -
     id: 1
     next_move: 3
-    grid: |
+    board: |
       o o o o o o o
       o o o o o o o
       o o o o o o o
@@ -54,7 +54,7 @@ horizontal:
   -
     id: 2
     next_move: 5
-    grid: |
+    board: |
       o o o o o o o
       o o o o o o o
       o o o o o o o
@@ -64,7 +64,7 @@ horizontal:
   -
     id: 3
     next_move: 4
-    grid: |
+    board: |
       o o o x o x x
       o o o - - - x
       o o o - x - -
@@ -74,7 +74,7 @@ horizontal:
   -
     id: 4
     next_move: 0
-    grid: |
+    board: |
       o x x x o o o
       - - - x o o o
       - x - - o o o
@@ -86,7 +86,7 @@ rising_diagonal:
   -
     id: 1
     next_move: 0
-    grid: |
+    board: |
       o o o o o o o
       o o o o o o o
       o o o x o o o
@@ -96,7 +96,7 @@ rising_diagonal:
   -
     id: 2
     next_move: 4
-    grid: |
+    board: |
       o o o o o o o
       o o o o o o o
       o o o o o o x
@@ -106,7 +106,7 @@ rising_diagonal:
   -
     id: 3
     next_move: 5
-    grid: |
+    board: |
       o o o o o o x
       o o o o o o -
       o o o o x - x
@@ -116,7 +116,7 @@ rising_diagonal:
   -
     id: 4
     next_move: 3
-    grid: |
+    board: |
       o o o o o o o
       o o x x o o o
       o x - - o o o
@@ -128,7 +128,7 @@ falling_diagonal:
   -
     id: 1
     next_move: 0
-    grid: |
+    board: |
       o o o o o o o
       o o o o o o o
       o o o o o o o
@@ -138,7 +138,7 @@ falling_diagonal:
   -
     id: 2
     next_move: 3
-    grid: |
+    board: |
       o o o o o o o
       o o o o o o o
       o o o o o o o
@@ -148,7 +148,7 @@ falling_diagonal:
   -
     id: 3
     next_move: 0
-    grid: |
+    board: |
       o o o o o o o
       x x o o o o o
       x x x o o o o
@@ -158,7 +158,7 @@ falling_diagonal:
   -
     id: 4
     next_move: 3
-    grid: |
+    board: |
       o o o o o o o
       o o o - x o o
       o o o - x x o
@@ -170,7 +170,7 @@ draw:
   -
     id: 1
     next_move: 2
-    grid: |
+    board: |
       - - o - x - -
       x x x - - x x
       - x x x - x -
@@ -182,7 +182,7 @@ column_overflow:
   -
     id: 1
     next_move: 6
-    grid: |
+    board: |
       - - o - x - -
       x x x - - x x
       - x x x - x -
@@ -194,7 +194,7 @@ remove_disk:
   -
     id: 1
     next_move: 6
-    grid: |
+    board: |
       - - o - x - -
       x x x - - x x
       - x x x - x -
@@ -205,7 +205,7 @@ remove_disk:
 savepoint:
   -
     id: 1
-    grid: |
+    board: |
       o o o o o o o
       o o o o o o o
       o o o o o o o

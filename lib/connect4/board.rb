@@ -5,7 +5,7 @@ require 'connect4/core_ext/array'
 require 'colorize'
 
 module Connect4
-  class Grid < Array
+  class Board< Array
 
     NUMBER_OF_COLUMNS = 7
     NUMBER_OF_ROWS = 6

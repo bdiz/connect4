@@ -35,30 +35,30 @@ module Fixtures
     Fixtures.fixtures
   end
 
-  def set_up_grid(grid_fixture, player1, player2)
-    Connect4::Grid.new.tap do |grid|
-      rows = String(grid_fixture).split("\n")
+  def set_up_board(board_fixture, player1, player2)
+    Connect4::Board.new.tap do |board|
+      rows = String(board_fixture).split("\n")
       rows = rows.map {|row| row.split }
       columns = rows.transpose.map {|c| c.reverse }
       columns.each_with_index do |column, column_index|
         column.each do |char|
           if char == 'x'
-            grid.insert(player1.disk, column_index)
+            board.insert(player1.disk, column_index)
           elsif char == '-'
-            grid.insert(player2.disk, column_index)
+            board.insert(player2.disk, column_index)
           end
         end
       end
     end
   end
 
-  def stub_grid grid_fixture, player1, player2, &block
-    grids = [
-      set_up_grid(grid_fixture, player1, player2),
-      set_up_grid(grid_fixture, player1, player2),
-      set_up_grid(grid_fixture, player1, player2)
+  def stub_board board_fixture, player1, player2, &block
+    boards = [
+      set_up_board(board_fixture, player1, player2),
+      set_up_board(board_fixture, player1, player2),
+      set_up_board(board_fixture, player1, player2)
     ]
-    Connect4::Grid.stub(:new, -> { grids.pop }) do
+    Connect4::Board.stub(:new, -> { boards.pop }) do
       block.call
     end
   end

@@ -6,7 +6,7 @@ module Connect4
 
     include Comparable
 
-    attr_accessor :grid
+    attr_accessor :board
 
     class << self
 

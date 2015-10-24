@@ -1,4 +1,4 @@
-require 'connect4/grid'
+require 'connect4/board'
 require 'connect4/display'
 require 'timeout'
 
@@ -12,8 +12,8 @@ module Connect4
 
     TIME_ALLOWED_PER_MOVE = 0.25
     TIME_BETWEEN_DISPLAYS = 1.5
-    PLAYER1_DISK = Grid::DISK.colorize(color: :red, background: Grid::BOARD_COLOR)
-    PLAYER2_DISK = Grid::DISK.colorize(color: :black, background: Grid::BOARD_COLOR)
+    PLAYER1_DISK = Board::DISK.colorize(color: :red, background: Board::BOARD_COLOR)
+    PLAYER2_DISK = Board::DISK.colorize(color: :black, background: Board::BOARD_COLOR)
 
     attr_reader :winner, :special_circumstance
 
@@ -28,8 +28,8 @@ module Connect4
       @player1.disk.symbol ||= PLAYER1_DISK
       @player2.disk.symbol ||= PLAYER2_DISK
 
-      @grids = [Grid.new, Grid.new, Grid.new]
-      @grid, @player1.grid, @player2.grid = @grids
+      @boards = [Board.new, Board.new, Board.new]
+      @board, @player1.board, @player2.board = @boards
       @turn = [@player1, @player2]
       @winner = nil
       @draw = false
@@ -49,7 +49,7 @@ module Connect4
       determine_winner do
         while !game_over?
           column = nil
-          restore_grids do
+          restore_boards do
             keep_time! do
               column = @turn.rotate!.last.next_move
             end
@@ -85,21 +85,21 @@ module Connect4
       [@player1, @player2].sort.reverse.map do |player|
         "#{player.disk.symbol} #{player} (#{player.wins} #{player.wins == 1 ? 'win' : 'wins'})"
       end
-      .join("\n") + "\n\n" + @grid.to_s
+      .join("\n") + "\n\n" + @board.to_s
     end
 
     private
 
-    def restore_grids &block
-      @player1.grid.set_savepoint
-      @player2.grid.set_savepoint
+    def restore_boards &block
+      @player1.board.set_savepoint
+      @player2.board.set_savepoint
       block.call
-      @player1.grid.restore_savepoint
-      @player2.grid.restore_savepoint
+      @player1.board.restore_savepoint
+      @player2.board.restore_savepoint
     end
 
     def play_disk column
-      @grids.each {|grid| grid.insert(@turn.last.disk, column) }
+      @boards.each {|board| board.insert(@turn.last.disk, column) }
     end
 
     def set_winner player
@@ -118,7 +118,7 @@ module Connect4
       @special_circumstance = "#{@turn.last} took too long to play - timeout. #{@turn.first} wins."
       @player_timeout = true
       set_winner(@turn.first)
-    rescue Grid::InvalidColumnPlayed => e
+    rescue Board::InvalidColumnPlayed => e
       @invalid_column_played = true
       @special_circumstance = "#{@turn.last} played into an invalid column, #{e.message.inspect}. #{@turn.first} wins."
       set_winner(@turn.first)
@@ -131,7 +131,7 @@ module Connect4
     end
 
     def game_over?
-      @grid.has_consecutive_disks? || (@draw = @grid.full?)
+      @board.has_consecutive_disks? || (@draw = @board.full?)
     end
 
     def keep_time! &block
