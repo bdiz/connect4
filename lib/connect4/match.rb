@@ -35,7 +35,7 @@ module Connect4
         game = Game.new(*who_plays_first, @options.merge(verbose: !silent_play && @verbose))
         game.scoreboard = scoreboard
         game.play
-        @wins[game.winner] += 1
+        @wins[game.winner] += 1 unless game.draw?
         game.scoreboard = scoreboard
         display(game, delay: 0.04) if silent_play and @verbose
         who_plays_first.rotate!
