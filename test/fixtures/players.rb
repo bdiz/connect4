@@ -1,62 +1,59 @@
 require 'connect4/player'
 
 class Player1 < Connect4::Player
-  name 'Laney'
 
-  def next_move
-    return rand(0..6)
+  def next_move board
+    moves = (0..6).to_a
+    while !moves.empty?
+      move = moves.sample
+      if board.first[move].nil?
+        return move
+      else
+        moves.delete(move)
+      end
+    end
   end
 
 end
 
-class Player2 < Connect4::Player
-  name 'Ben'
-
-  def next_move
-    return rand(0..6)
-  end
-
+class Player2 < Player1
 end
 
 class GoodPlayer < Connect4::Player
-  name 'smartie'
 
-  def next_move
+  def next_move board
     return 0
   end
 
 end
 
 class BadPlayer < Connect4::Player
-  name 'dumby'
 
   def reset
     @moves = [6,4,5]
   end
 
-  def next_move
+  def next_move board
     return @moves.rotate!.first
   end
 
 end
 
 class PredictablePlayer < Connect4::Player
-  name 'predictable'
 
   def initialize column
     @column = column
   end
 
-  def next_move
+  def next_move board
     return @column
   end
 
 end
 
 class SlowPlayer < Connect4::Player
-  name 'turtle'
 
-  def next_move
+  def next_move board
     sleep 0.3
     return rand(0..6)
   end
@@ -64,33 +61,21 @@ class SlowPlayer < Connect4::Player
 end
 
 class InvalidColumnPlayer < Connect4::Player
-  name 'invalid_column'
 
   def reset
     @move = [5, 6, 7]
   end
 
-  def next_move
+  def next_move board
     return @move.shift
   end
 
 end
 
 class ExceptionalPlayer < Connect4::Player
-  name 'boom'
 
-  def next_move
+  def next_move board
     raise RuntimeError, "Something went wrong."
-  end
-
-end
-
-class ManualPlayer < Connect4::Player
-  name 'Emanuel'
-
-  def next_move
-    print "Your turn, #{name} (1-7): "
-    return Integer(gets)-1
   end
 
 end

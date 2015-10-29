@@ -1,6 +1,6 @@
 # Connect4
 
-Connect4 provides the grid and tournament code so you can go head-to-head
+Connect4 provides the board and tournament code so you can go head-to-head
 with your friends using your own Connect4 brainiac algorithms.
 
 ## Usage
@@ -14,12 +14,11 @@ Git clone this repo, bundle install, and add a ruby file into `lib/connect4/play
 
 ```ruby
 class MyPlayer < Connect4::Player
-  name 'Me'
 
   # Returns the column number of your next move.
-  def next_move
-    # grid is an Array of Arrays of comparable Connect4:Disk objects.
-    grid.each do |column|
+  def next_move board
+    # board is an Array of Arrays of comparable Connect4:Disk objects.
+    board.each do |column|
       column.each do |row|
         # ..do some nifty analysis and return a column number
         return rand(0..6)

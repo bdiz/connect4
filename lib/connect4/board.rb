@@ -1,45 +1,83 @@
-require 'connect4/disk'
-require 'connect4/column'
-require 'connect4/core_ext/array'
+require 'connect4/space'
 
 require 'colorize'
 
 module Connect4
-  class Board< Array
+  class Board < Array
 
     NUMBER_OF_COLUMNS = 7
     NUMBER_OF_ROWS = 6
     NUMBER_OF_CONSECUTIVE_DISKS = 4
     ZERO_INDEX_OFFSET = 1
 
-    DISK = "\u2b24 "
+    BOARD_COLOR = :yellow
+    DISK_SYMBOL = "\u2b24 ".colorize(background: BOARD_COLOR)
     LEFT_LEG = "\u2571"
     RIGHT_LEG = "\u2572"
-    BOARD_COLOR = :yellow
-    Space.get.symbol = DISK.colorize(color: :light_black, background: BOARD_COLOR)
+    Space.symbol = DISK_SYMBOL.colorize(color: :light_black)
 
-    class OverflowError < RuntimeError
+    class ColumnOverflowError < RuntimeError
     end
     class InvalidColumnPlayed < ArgumentError
     end
 
-    def initialize columns=nil
-      super(columns || Array.new(NUMBER_OF_COLUMNS) { Column.new(NUMBER_OF_ROWS, Space.get) })
+    class Column < Array
+      def full?
+        self.last.has_disk?
+      end
+
+      def empty?
+        self.first.empty?
+      end
+    end
+
+    def self.from_array array, player1, player2
+      Connect4::Board.new.tap do |board|
+        array.reverse.transpose.each_with_index do |column, column_index|
+          column.each do |char|
+            if char == 1
+              board.insert(player1.disk, column_index)
+            elsif char == 2
+              board.insert(player2.disk, column_index)
+            end
+          end
+        end
+      end
+    end
+
+    def initialize
+      super(Array.new(NUMBER_OF_COLUMNS) { Column.new(NUMBER_OF_ROWS) { Space.new } })
+      NUMBER_OF_COLUMNS.times do |col|
+        NUMBER_OF_ROWS.times do |row|
+          space = board[col][row]
+          space.col, space.row = col, row
+          space.north = board[col][row+1]
+          space.south = board[col][row-1] unless row == 0
+          space.east  = board[col+1] && board[col+1][row]
+          space.west  = board[col-1] && board[col-1][row] unless col == 0
+          space.north_east = board[col+1] && board[col+1][row+1]
+          space.south_east = board[col-1] && board[col-1][row+1] unless col == 0
+          space.south_west = board[col-1] && board[col-1][row-1] unless col == 0 or row == 0
+          space.north_west = board[col+1] && board[col+1][row-1] unless row == 0
+        end
+      end
       @restore_savepoint_operations = []
     end
 
+    attr_reader :last_space_played
+
     def insert disk, column
-      raise InvalidColumnPlayed, column unless (0..6).include?(column)
+      raise InvalidColumnPlayed, column unless (0..(NUMBER_OF_COLUMNS - ZERO_INDEX_OFFSET)).include?(column)
       @restore_savepoint_operations << {method: :remove, column: column}
       begin
-        columns[column].insert(disk)
-      rescue Column::OverflowError => e
-        raise e, "in column #{column}", e.backtrace
+        @last_space_played = board[column].last.insert(disk)
+      rescue Space::OverflowError => e
+        raise ColumnOverflowError, "in column #{column}", e.backtrace
       end
     end
 
     def remove column
-      columns[column].remove.tap do |disk|
+      board[column].last.remove.tap do |disk|
         @restore_savepoint_operations << {method: :insert, column: column, disk: disk}
       end
     end
@@ -51,70 +89,48 @@ module Connect4
     def restore_savepoint
       while !@restore_savepoint_operations.empty?
         operation = @restore_savepoint_operations.pop
-        columns[operation[:column]].send(operation[:method], *[operation[:disk]].compact)
+        board[operation[:column]].last.send(operation[:method], *[operation[:disk]].compact)
       end
     end
 
     alias_method :restore, :restore_savepoint
     
     def full?
-      columns.flatten.none?(&:empty?)
+      board.map{|column| column.full? }.all?
     end
 
-    def has_consecutive_disks?
-      !!(
-        consecutive_vertical_disks.first ||
-        consecutive_horizontal_disks.first ||
-        consecutive_diagonal_disks(:falling).first ||
-        consecutive_diagonal_disks(:rising).first
-      )
-    end
-
-    def consecutive_vertical_disks
-      consecutive_disks(columns)
-    end
-
-    def consecutive_horizontal_disks
-      consecutive_disks(columns.transpose)
-    end
- 
-    def consecutive_diagonal_disks angle
-      offset_columns = []
-      temp_columns = (angle == :falling) ? columns : columns.reverse
-      temp_columns.each_with_index do |column, shift_amount|
-        column = column.dup
-        shift_amount.times { column.unshift(Space.get) }
-        (NUMBER_OF_COLUMNS - ZERO_INDEX_OFFSET - shift_amount).times { column << Space.get }
-        offset_columns << column
-      end
-      consecutive_disks(offset_columns.transpose)
+    def empty?
+      board.map{|column| column.empty? }.all?
     end
 
     def to_s
       s = ''
       (0..NUMBER_OF_ROWS-ZERO_INDEX_OFFSET).to_a.reverse.each do |row|
         s += '   '
-        columns.each_with_index do |column, index|
-          s += ' '.colorize(background: BOARD_COLOR) unless index == 0
-          s += "#{column[row]}"
+        NUMBER_OF_COLUMNS.times do |col|
+          s += ' '.colorize(background: BOARD_COLOR)
+          s += "#{board[col][row]}"
         end
+        s += " ".colorize(background: BOARD_COLOR)
         s += "\n"
       end
-      s += "    #{LEFT_LEG}               #{RIGHT_LEG}\n".colorize(:blue).bold
+      s += "     #{LEFT_LEG}               #{RIGHT_LEG}\n".colorize(:blue).bold
       return s
+    end
+
+    def to_a player1
+      board.map do |column|
+        column.map do |space|
+          if space.has_disk?
+            space.mine?(player1) ? 1 : 2
+          end
+        end
+      end.transpose.reverse
     end
 
     private
 
-    def consecutive_disks array
-      array.each_with_object([]) do |column, sets_of_disks|
-        column.
-          consecutive_sets(NUMBER_OF_CONSECUTIVE_DISKS).
-          each {|set| sets_of_disks << set }
-      end
-    end
-
-    def columns
+    def board
       self
     end
 

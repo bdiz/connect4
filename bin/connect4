@@ -6,17 +6,21 @@ require 'connect4'
 
 module Connect4
   Tournament.freeze
+  Round.freeze
+  Match.freeze
   Game.freeze
-  Grid.freeze
+  Board.freeze
+  Board::Column.freeze
+  Space.freeze
   Disk.freeze
 end
 
-players_dir = File.expand_path("../../lib/connect4/players", __FILE__)
-Dir.glob("#{players_dir}/*.rb").each {|file| load file }
-
-tournament_options = {
-  games_per_match: eval(ENV['GAMES'].to_s),
-  verbose:         eval(ENV['VERBOSE'].to_s)
-}
-
-Connect4::Tournament.new(*Connect4::Player.players, tournament_options).play
+tournament = Connect4::Tournament.new(
+  *Connect4::Player.players,
+  verbose:                    eval(ENV.fetch('VERBOSE', 'true')),
+  number_of_games:            eval(ENV['GAMES'] || 'nil'),
+  number_of_games_to_display: eval(ENV['GAMES_TO_DISPLAY'] || 'nil'),
+  time_allowed_per_move:      eval(ENV['TIMEOUT'] || 'nil'),
+  debug:                      eval(ENV['DEBUG'] || 'nil')
+)
+tournament.play

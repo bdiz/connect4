@@ -1,45 +1,13 @@
 module Connect4
 
-  class Space
+  class Disk
 
-    class << self
-      private_methods :new
-      def get
-        @singleton ||= new
-      end
-    end
-
+    attr_accessor :symbol
     attr_reader :player
     alias_method :owner, :player
-    attr_accessor :symbol
-
-    def empty?
-      true
-    end
-
-    def mine? player
-      false
-    end
-
-    def theirs? player
-      false
-    end
-
-    def to_s
-      @symbol
-    end
-
-  end
-
-  class Disk < Space
-    include Comparable
 
     def initialize player
       @player = player
-    end
-
-    def empty?
-      false
     end
 
     def mine? player
@@ -50,21 +18,16 @@ module Connect4
       @player != player
     end
 
-    def <=> other
-      if symbol and other.symbol
-        symbol <=> other.symbol
+    def to_s
+      symbol
+    end
+
+    def inspect options={}
+      if options.fetch(:verbose, true)
+        "#<#{self.class}:0x#{sprintf("%014x", self.object_id * 2)} @symbol=#{symbol ? symbol : 'nil'} @player=#{player.inspect(verbose: false)}>"
       else
-        object_id <=> other.object_id
+        "#<#{self.class}:0x#{sprintf("%014x", self.object_id * 2)} @symbol=#{symbol ? symbol : 'nil'}>"
       end
-    end
-
-    alias_method :eql?, :==
-    def hash
-      @player.object_id.hash
-    end
-
-    def inspect
-      to_s
     end
 
   end

@@ -1,57 +1,36 @@
 require 'connect4/disk'
 
 module Connect4
-
   class Player
 
-    include Comparable
-
-    attr_accessor :board
-
-    class << self
-
-      def inherited sub
-        @players ||= []
-        @players << sub
-      end
-
-      def players
-        @players ? @players.map(&:new) : []
-      end
-
-      def name name
-        @name = name
-      end
-
-      def get_name
-        @name
-      end
-
-    end
-
     def name
-      String(self.class.get_name || self.class)
+      self.class.to_s
     end
 
     def reset
       # override if player wants indication of a new game
     end
 
-    def next_move
+    def next_move board
       # must be overriden and return a column 0-6.
       raise NoImplementedError, "#{self.class}#next_move needs to be implemented."
     end
 
     def disk
+      # if memoizing is removed, Space#<=> and Space#hash must change too.
       @disk ||= Disk.new(self)
-    end
-
-    def <=> other
-      disk <=> other.disk
     end
 
     def to_s
       name
+    end
+
+    def inspect options={}
+      if options.fetch(:verbose, true)
+        "#<#{self.class}:0x#{sprintf("%014x", self.object_id * 2)} @disk=#{disk.inspect(verbose: false)}>"
+      else
+        "#<#{self.class}:0x#{sprintf("%014x", self.object_id * 2)}>"
+      end
     end
 
   end

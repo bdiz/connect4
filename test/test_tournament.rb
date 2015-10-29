@@ -7,7 +7,7 @@ describe Connect4::Tournament do
   it 'is playable' do
     smartie = GoodPlayer.new
     dumby = BadPlayer.new
-    tournament = Connect4::Tournament.new(smartie, Player2.new, games_per_match: 3, verbose: false)
+    tournament = Connect4::Tournament.new(smartie, dumby, games_per_match: 3)
     tournament.play
     tournament.winner.must_equal smartie
   end

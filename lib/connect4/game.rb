@@ -10,26 +10,31 @@ module Connect4
     class PlayerTimeout < Timeout::Error
     end
 
-    TIME_ALLOWED_PER_MOVE = 0.25
+    DEFAULT_VERBOSITY = false
+    DEFAULT_TIME_ALLOWED_PER_MOVE = 0.25
     TIME_BETWEEN_DISPLAYS = 1.5
-    PLAYER1_DISK = Board::DISK.colorize(color: :red, background: Board::BOARD_COLOR)
-    PLAYER2_DISK = Board::DISK.colorize(color: :black, background: Board::BOARD_COLOR)
+    PLAYER1_DISK_SYMBOL = Board::DISK_SYMBOL.colorize(color: :red)
+    PLAYER2_DISK_SYMBOL = Board::DISK_SYMBOL.colorize(color: :black)
 
     attr_reader :winner, :special_circumstance
 
     def initialize player1, player2, options={}
       raise ArgumentError, "Player instances are same." if player1.object_id == player2.object_id
 
+      @verbose = options[:verbose] || DEFAULT_VERBOSITY
+      @time_between_displays = TIME_BETWEEN_DISPLAYS
+      @time_allowed_per_move = Float(options[:time_allowed_per_move] || DEFAULT_TIME_ALLOWED_PER_MOVE)
+      @debug = options[:debug]
+
       @player1, @player2 = player1, player2
 
       @player1.reset
       @player2.reset
 
-      @player1.disk.symbol ||= PLAYER1_DISK
-      @player2.disk.symbol ||= PLAYER2_DISK
+      @player1.disk.symbol ||= PLAYER1_DISK_SYMBOL
+      @player2.disk.symbol ||= PLAYER2_DISK_SYMBOL
 
-      @boards = [Board.new, Board.new, Board.new]
-      @board, @player1.board, @player2.board = @boards
+      @board = Board.new
       @turn = [@player1, @player2]
       @winner = nil
       @draw = false
@@ -39,9 +44,6 @@ module Connect4
       @player_timeout = false
       @invalid_column_played = false
       @player_crashed = false
-
-      @verbose = options[:verbose] || false
-      @time_between_displays = TIME_BETWEEN_DISPLAYS
     end
 
     def play
@@ -49,10 +51,9 @@ module Connect4
       determine_winner do
         while !game_over?
           column = nil
-          restore_boards do
-            keep_time! do
-              column = @turn.rotate!.last.next_move
-            end
+          keep_time! do
+            player = @turn.rotate!.last
+            column = player.next_move(@board.to_a(player))
           end
           play_disk(column)
           display self if @verbose
@@ -81,61 +82,46 @@ module Connect4
       @player_timeout
     end
 
+    attr_accessor :scoreboard
     def to_s
-      [@player1, @player2].sort.reverse.map do |player|
-        "#{player.disk.symbol} #{player} (#{player.wins} #{player.wins == 1 ? 'win' : 'wins'})"
-      end
-      .join("\n") + "\n\n" + @board.to_s
+      "#{scoreboard}\n\n#{@board}"
     end
 
     private
 
-    def restore_boards &block
-      @player1.board.set_savepoint
-      @player2.board.set_savepoint
-      block.call
-      @player1.board.restore_savepoint
-      @player2.board.restore_savepoint
-    end
-
     def play_disk column
-      @boards.each {|board| board.insert(@turn.last.disk, column) }
-    end
-
-    def set_winner player
-      player.add_win
-      @winner = player
+      @board.insert(@turn.last.disk, column)
     end
 
     def determine_winner &block
       block.call
-      set_winner(@turn.last) unless draw?
-    rescue Column::OverflowError => e
+      @winner = @turn.last unless draw?
+    rescue Board::ColumnOverflowError => e
       @special_circumstance = "#{@turn.last} put a disk #{e.message} when it was full. #{@turn.first} wins."
       @column_overflowed = true
-      set_winner(@turn.first)
+      @winner = @turn.first
     rescue PlayerTimeout => e
       @special_circumstance = "#{@turn.last} took too long to play - timeout. #{@turn.first} wins."
       @player_timeout = true
-      set_winner(@turn.first)
+      @winner = @turn.first
     rescue Board::InvalidColumnPlayed => e
       @invalid_column_played = true
       @special_circumstance = "#{@turn.last} played into an invalid column, #{e.message.inspect}. #{@turn.first} wins."
-      set_winner(@turn.first)
+      @winner = @turn.first
     rescue => e
       @player_crashed = true
       @special_circumstance = "#{@turn.last} crashed with a #{$!.class}. #{@turn.first} wins."
-      set_winner(@turn.first)
+      @winner = @turn.first
     ensure
-      raise e if e and eval("#{ENV['DEBUG']}")
+      raise e if e and @debug
     end
 
     def game_over?
-      @board.has_consecutive_disks? || (@draw = @board.full?)
+      (@board.last_space_played && @board.last_space_played.part_of_consecutive?) || (@draw = @board.full?)
     end
 
     def keep_time! &block
-      Timeout::timeout(Float(ENV.fetch('TIMEOUT', TIME_ALLOWED_PER_MOVE)), PlayerTimeout) { block.call }
+      Timeout::timeout(@time_allowed_per_move, PlayerTimeout) { block.call }
     end
 
     def display_winner
@@ -151,5 +137,4 @@ module Connect4
     end
 
   end
-
 end
