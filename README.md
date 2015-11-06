@@ -15,15 +15,24 @@ Git clone this repo, bundle install, and add a ruby file into `lib/connect4/play
 ```ruby
 class MyPlayer < Connect4::Player
 
-  # Returns the column number of your next move.
+  # Return the column number of your next move (0-6).
+  # +board+ is an array of arrays. 1 indicates your disk. 2 indicates your opponents disk.
+  # [
+  #   [nil, nil, nil, nil, nil, nil, nil],
+  #   [nil, nil, nil, nil, nil, nil, nil],
+  #   [nil, nil, nil, nil, nil, nil, nil],
+  #   [nil, nil,   2, nil, nil, nil, nil],
+  #   [nil, nil,   1,   2, nil, nil, nil],
+  #   [  2,   1,   1,   1,   2, nil, nil]
+  # ]
   def next_move board
-    # board is an Array of Arrays of comparable Connect4:Disk objects.
     board.each do |column|
       column.each do |row|
-        # ..do some nifty analysis and return a column number
-        return rand(0..6)
+        # ..do some nifty analysis
       end
     end
+    # return a column number
+    return rand(0..6)
   end
 
 end
